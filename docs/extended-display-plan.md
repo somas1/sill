@@ -175,3 +175,7 @@ monitors, and offer it back as phase 4's first half.
 ## Progress
 
 - 2026-11-15: #301 merged into this branch with main at aea3547 (no conflicts); the plan written. Nothing built or run.
+- 2026-11-16: part 1 tried on the hardware: the Duo on a car monitor over Tailscale, to the M2 and the M6, usable as is.
+  The M6's Desktop shows bars at the sides (16:10 on a wider monitor), which part 2 removes. Step 3's sizes still to
+  record. Main use, for part 2's design: the car, away from home, so the away quality sets what a monitor-sized
+  desktop costs in cellular data.
