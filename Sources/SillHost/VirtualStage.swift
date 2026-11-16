@@ -216,7 +216,7 @@ final class VirtualStage {
 
     /// The display size (without the menu bar) that fits this panel at every Aa scale and in both
     /// orientations: a square of the longer edge ÷ 0.5 (the slider's smallest step), every side 800
-    /// to 4096 points (VirtualDisplaySize, pure, where the rule and its reasons are). No viewport →
+    /// to 2720 points (VirtualDisplaySize, pure, where the rule and its reasons are). No viewport →
     /// the window's own size, held the same way.
     static func envelope(for v: Viewport?, windowSize: CGSize) -> CGSize {
         VirtualDisplaySize.envelope(panel: v.map { CGSize(width: $0.width, height: $0.height) }, windowSize: windowSize)
@@ -514,7 +514,7 @@ final class VirtualStage {
     /// with the display destroyed if it never came up or SCK never saw it.
     private func ensureDisplay(atLeast env: CGSize) async throws {
         var env = VirtualDisplaySize.clamp(env)
-        env.height = min(env.height, VirtualDisplaySize.maxSide - menuInset)   // the menu bar counts toward the 8192 px ceiling
+        env.height = min(env.height, VirtualDisplaySize.maxSide - menuInset)   // the menu bar counts toward the ceiling
         if let d = display, d.isAlive, scDisplay != nil, Int(d.refreshHz) == refreshHz,
            CGFloat(d.widthPt) >= env.width, CGFloat(d.heightPt) - menuInset >= env.height {
             Stats.shared.bump("vd.reused")

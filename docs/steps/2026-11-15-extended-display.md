@@ -19,5 +19,13 @@
 - **John's main use**: the car, the Duo on the car's monitor, over Tailscale to the Macs at home. The Duo is then out of
   devicectl's reach, so the M6's Sill.log is the evidence (a picked window's virtual display line gives the monitor's
   size from the viewport).
-- **Untested**: the monitor's size as iOS reports it (step 3; pick a window on the M6 and read its virtual display
-  line), a window filling the monitor, an iPad, AirPlay, glasses.
+- **Found and fixed (2026-11-16)**: the car monitor reports 1920 × 1080 points (Sill's virtual display was asked
+  3840 × 3870, the square of 1920 ÷ 0.5 and a 30-point menu bar). macOS ran that display with no modes ("backing
+  0×0 px") five times, so every picked window fell back to its own shape, bars on the monitor. `VirtualDisplaySize.
+  maxSide` goes from 4096 to 2720 points (2720 × 2750 is the largest Sill.log shows at 2x); a 1080p monitor now gets
+  2720 × 2720, with room for its 1920 × 1080 window at Aa's 1x. Checks: `capture-scale` 179 of 179, its 51 mutants
+  caught (V9 now raises the ceiling back to 4096), `stage-release`, `repo-rules`, `swift build -c release`.
+  Not installed or tried live yet: `make-app.sh --install` quits Sill.app, so it waits until no device is connected;
+  then `--virtual-display-selftest` at sizes between 2720 and 3840 finds macOS's real limit and the cap is raised to it.
+  Upstream (Saffsanity/sill main) has the same 4096 and no issue for it: one to offer back.
+- **Untested**: a window filling the monitor once the fix is installed, an iPad, AirPlay, glasses.

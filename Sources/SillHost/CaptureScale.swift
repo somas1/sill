@@ -147,8 +147,14 @@ enum CaptureScale {
 enum VirtualDisplaySize {
     /// The least side, in points.
     static let minSide: CGFloat = 800
-    /// 4096 keeps the 2x backing store at or under 8192 pixels, VirtualDisplay's ceiling.
-    static let maxSide: CGFloat = 4096
+    /// The most macOS is known to run at 2x. 4096 (8192 pixels, VirtualDisplay's own ceiling) was
+    /// too many: on 2026-11-16 a device on a 1080p monitor (Saffsanity/sill#301's viewport, 1920 points
+    /// across) asked a 3840×3870 display, which came up online with no modes ("backing 0×0 px") five
+    /// times, so every picked window fell back to its own shape, bars on the monitor. 2720×2750 (5440
+    /// pixels a side) is the largest Sill.log shows up at 2x. Held there until a
+    /// `--virtual-display-selftest` finds where between 2720 and 3840 macOS stops; a window larger than
+    /// the display (Aa's smaller steps on a monitor) is fitted to it by the placement, as before.
+    static let maxSide: CGFloat = 2720
 
     /// Each side held to `minSide`…`maxSide`.
     static func clamp(_ s: CGSize) -> CGSize {
@@ -167,7 +173,7 @@ enum VirtualDisplaySize {
 
     /// The most a window is asked for on the virtual display, a side: the largest viewport a host takes,
     /// 16384 points at a text scale of 0.25 (ViewportBounds), so the hold changes no size a host asked
-    /// for before. Not the display's `maxSide`: the placement fits the window to the display anyway
+    /// for before. Not the display's `maxSide` (4096 then): the placement fits the window to the display anyway
     /// (VirtualStage.prepare's `dest`), and a full-screen window's crop takes the shape of this size,
     /// which is the panel's only while no side is held. Held at 4096, a 2560×1400 panel at 0.5x (an iPad's
     /// Stage Manager window on a large display) was asked 4096×2800, and a full-screen window's crop came

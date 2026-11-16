@@ -104,7 +104,9 @@ MUTANTS = [
      "panel.height > 0 else { return windowSize }"),
     ("V8 a panel with no width counted", "        guard let panel, panel.width > 0, panel.height > 0 else",
      "        guard let panel, panel.height > 0 else"),
-    ("V9 the ceiling raised past VirtualDisplay's 8192 pixels at 2x", "    static let maxSide: CGFloat = 4096\n",
+    ("V9 the ceiling back at 4096 (2026-11-16: a 1080p monitor's 3840x3870 display came up with no modes)",
+     "    static let maxSide: CGFloat = 2720\n", "    static let maxSide: CGFloat = 4096\n"),
+    ("V9b the ceiling raised past VirtualDisplay's 8192 pixels at 2x", "    static let maxSide: CGFloat = 2720\n",
      "    static let maxSide: CGFloat = 8192\n"),
     # The window's size on the virtual display: held to 1…65536 points (security scan, finding 4; the review).
     ("S1 the window's size unheld (the bug: 1e300 points, the \"insists on\" line's Int() trapped)", STAGE,

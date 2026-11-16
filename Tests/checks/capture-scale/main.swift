@@ -371,7 +371,7 @@ func oldDisplay(_ env: CGSize, menuBar: CGFloat = 30) -> CGSize {
 func envelope(_ w: CGFloat, _ h: CGFloat) -> CGSize { V.envelope(panel: CGSize(width: w, height: h), windowSize: .zero) }
 func text(_ s: CGSize) -> String { "\(Int(s.width))×\(Int(s.height))" }
 
-check(V.minSide == 800 && V.maxSide == 4096, "every side 800 to 4096 points")
+check(V.minSide == 800 && V.maxSide == 2720, "every side 800 to 2720 points")
 // Sill.log's five displays at 1x: an iPhone held upright, its picture 377 (or 381) points wide.
 check(text(oldDisplay(CGSize(width: 754, height: 754))) == "754×784" && text(oldDisplay(CGSize(width: 762, height: 762))) == "762×792",
       "before: an iPhone upright's envelope made a 754×784 (or 762×792) display, which macOS ran at 800×832 at 1x")
@@ -400,9 +400,17 @@ check(text(V.envelope(panel: CGSize(width: -5, height: 300), windowSize: CGSize(
       "a negative panel counts as none")
 // The grow path's envelope (an app's minimum) and the ceiling.
 check(text(V.clamp(CGSize(width: 754, height: 979))) == "800×979", "Sill.log's 754×979 display (2x then) is 800 wide now")
-check(text(V.clamp(CGSize(width: 9000, height: 5000))) == "4096×4096", "the ceiling: 4096 points a side")
-check(text(display(CGSize(width: 9000, height: 9000))) == "4096×4096", "at the ceiling the menu bar still fits under 4096")
-check(text(envelope(3000, 2000)) == "4096×4096", "a panel too big for the ceiling: 4096")
+check(text(V.clamp(CGSize(width: 9000, height: 5000))) == "2720×2720", "the ceiling: 2720 points a side")
+check(text(display(CGSize(width: 9000, height: 9000))) == "2720×2720", "at the ceiling the menu bar still fits under 2720")
+check(text(envelope(3000, 2000)) == "2720×2720", "a panel too big for the ceiling: 2720")
+// 2026-11-16: a device on a 1080p monitor (#301) sends 1920×1080; its 3840×3870 display came up with
+// no modes five times. Now within 2720×2750, the largest Sill.log shows at 2x, with room for the
+// window at Aa's 1x (VirtualStage.prepare fits a larger one to the display).
+check(text(display(envelope(1920, 1080))) == "2720×2720", "a 1080p monitor's 1920×1080: 2720×2720, not 3840×3870")
+check(text(display(envelope(1920, 1080))) != "3840×3870", "never again the display macOS ran with no modes")
+check(display(envelope(1920, 1080)).width >= 1920 && display(envelope(1920, 1080)).height - 30 >= 1080,
+      "the monitor's window at 1x fits below the menu bar")
+check(text(display(envelope(1360, 1000))) == "2720×2720", "the panel of Sill.log's largest display at 2x (2720×2750): 2720×2720 now, the menu bar under the ceiling")
 // Never smaller than before: the floor only ever adds.
 check(V.clamp(CGSize(width: 2234, height: 2234)) == CGSize(width: 2234, height: 2234), "a display over the floor is left as it is")
 
@@ -416,21 +424,21 @@ for _ in 0..<20_000 {
     let env = envelope(w, h)
     let d = display(env, menuBar: menuBar)
     if d.width < 800 || d.height < 800 { under800 += 1 }
-    if d.width > 4096 || d.height > 4096 { overCeiling += 1 }
+    if d.width > V.maxSide || d.height > V.maxSide { overCeiling += 1 }
     if w > 0, h > 0 {
         if env.width != env.height { notSquare += 1 }
         let need = max(w, h) / 0.5
-        if need <= 4096, env.width < need || env.height < need { panelDoesNotFit += 1 }
-        if env.width < min(max(ceil(need), 320), 4096) { smallerThanBefore += 1 }
+        if need <= V.maxSide, env.width < need || env.height < need { panelDoesNotFit += 1 }
+        if env.width < min(max(ceil(need), 320), V.maxSide) { smallerThanBefore += 1 }
         let bigger = envelope(w + 1, h + 1)
         if bigger.width < env.width { notMonotonicEnv += 1 }
     }
     let own = CGSize(width: w * 2, height: h * 2)
     let byWindow = V.envelope(panel: nil, windowSize: own)
-    if byWindow != CGSize(width: min(max(own.width, 800), 4096), height: min(max(own.height, 800), 4096)) { noPanelWrong += 1 }
+    if byWindow != CGSize(width: min(max(own.width, 800), V.maxSide), height: min(max(own.height, 800), V.maxSide)) { noPanelWrong += 1 }
 }
 check(under800 == 0, "20,000 random panels and menu bars: every display side 800 points or more (\(under800) not)")
-check(overCeiling == 0, "every display within 4096 points, the menu bar included (\(overCeiling) not)")
+check(overCeiling == 0, "every display within the ceiling (\(Int(V.maxSide)) points), the menu bar included (\(overCeiling) not)")
 check(notSquare == 0, "a panel's envelope is a square (\(notSquare) not)")
 check(panelDoesNotFit == 0, "the panel fits at Aa's smallest step, either way round (\(panelDoesNotFit) not)")
 check(smallerThanBefore == 0, "never smaller than before (\(smallerThanBefore))")
